@@ -75,8 +75,6 @@ public class Ork implements Runnable{
             this.lock.lock();
             this.leftFork = table.grabLeftDagger(this);
             this.rightFork = table.grabRightDagger(this);
-            this.table.setLend(this.leftFork.getNumber(),false);
-            this.table.setLend(this.rightFork.getNumber(),false);
             lock.unlock();
             if (this.leftFork != null)
             {
@@ -96,13 +94,17 @@ public class Ork implements Runnable{
             {
                 try {
                     Thread.sleep(feasting());
+                    this.table.setLend(this.leftFork.getNumber(),false);
+                    this.table.setLend(this.rightFork.getNumber(),false);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+
                 this.leftFork = null;
                 this.rightFork = null;
             }
             else {
+               
                 System.out.println(this.name +" is not feasting");
             }
 
