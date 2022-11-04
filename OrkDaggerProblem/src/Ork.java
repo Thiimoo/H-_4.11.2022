@@ -67,6 +67,7 @@ public class Ork implements Runnable{
         {
             try {
                 Thread.sleep(drinking());
+                //now working
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
