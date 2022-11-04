@@ -1,19 +1,24 @@
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Ork implements Runnable{
 
     private Fork leftFork;
     private Fork rightFork;
     private int number;
+    private ReentrantLock lock;
+    private String name;
 
     private Table table;
 
-    public Ork(Fork leftFork, Fork rightFork, int number, Table table) {
+    public Ork(Fork leftFork, Fork rightFork, int number, Table table, String name, ReentrantLock lock) {
         this.leftFork = leftFork;
         this.rightFork = rightFork;
         this.number = number;
         this.table = table;
+        this.name = name;
+        this.lock = lock;
     }
 
     public Fork getLeftFork() {
@@ -44,7 +49,7 @@ public class Ork implements Runnable{
     {
         Random random = ThreadLocalRandom.current();
         int number = 99 + random.nextInt(1001);
-        System.out.println("Ork "+ this.number+" is drinking for: "+number/100+" seconds");
+        System.out.println(this.name+" is drinking for: "+number/100+" seconds");
         return number;
     }
 
@@ -53,13 +58,10 @@ public class Ork implements Runnable{
     {
         Random random = ThreadLocalRandom.current();
         int number = 99 + random.nextInt(1001);
-        this.table.setLend(this.leftFork.getNumber(),false);
-        this.table.setLend(this.rightFork.getNumber(),false);
-        System.out.println("Ork "+ this.number+" is feasting for: "+number/100+" seconds");
-        this.leftFork = null;
-        this.rightFork = null;
+        System.out.println(this.name+" is feasting for: "+number/100+" seconds");
         return number;
     }
+
 
     @Override
     public void run() {
@@ -67,47 +69,44 @@ public class Ork implements Runnable{
         {
             try {
                 Thread.sleep(drinking());
-                //now working
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+            this.lock.lock();
             this.leftFork = table.grabLeftDagger(this);
             this.rightFork = table.grabRightDagger(this);
-            try
+            this.table.setLend(this.leftFork.getNumber(),false);
+            this.table.setLend(this.rightFork.getNumber(),false);
+            lock.unlock();
+            if (this.leftFork != null)
             {
-                if (!this.leftFork.equals(null))
-                {
-                    this.table.setLend(this.leftFork.getNumber(),true);
-                    System.out.println("Ork "+this.number+" has left fork");
+                System.out.println(this.name+" has left fork");
+            }
+            else {
+                System.out.println(this.name+" has left fork not");
+            }
+            if (this.rightFork != null)
+            {
+                System.out.println(this.name+" has right fork");
+            }
+            else {
+                System.out.println(this.name+" has right fork not");
+            }
+            if (this.leftFork!= null&&this.rightFork!=null)
+            {
+                try {
+                    Thread.sleep(feasting());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
+                this.leftFork = null;
+                this.rightFork = null;
             }
-            catch (NullPointerException n)
-            {
-                System.out.println("Ork "+this.number+" has left fork not");
+            else {
+                System.out.println(this.name +" is not feasting");
             }
-        try{
-            if (!this.rightFork.equals(null))
-            {
-                this.table.setLend(this.rightFork.getNumber(),true);
-                System.out.println("Ork "+this.number+" has right fork");
-            }
-        }
-        catch (NullPointerException nullPointerException)
-        {
-            System.out.println("Ork "+this.number+" has right fork not");
-        }
-        try{
-            if (!this.rightFork.equals(null)&&!this.rightFork.equals(null))
-            {
-                Thread.sleep(feasting());
-            }
-        }
-        catch (NullPointerException pointerException)
-            {
-                System.out.println("Ork "+this.number+" not feasting");
-            } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+
+
         }
     }
 }

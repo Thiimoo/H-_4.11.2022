@@ -1,10 +1,13 @@
-public class Fork {
+import java.util.concurrent.Semaphore;
+
+public class Fork extends Semaphore {
 
     private String name;
     private int number;
     private boolean islend = false;
 
     public Fork(String name,int number) {
+        super(3);
         this.name = name;
         this.number = number;
     }
